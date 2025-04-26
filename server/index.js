@@ -7,7 +7,10 @@ const businessRoutes = require('./routes/business.routes');
 const locationRoutes = require('./routes/location.routes');
 const serviceRoutes = require('./routes/service.routes');
 const consultantRoutes = require('./routes/consultant.routes');
+const salesOptimizationRoutes = require("./routes/salesOptimization.routes");
+const feasibilityRoutes = require("./routes/feasibilityStudy.routes");
 
+ 
 //Imports
 require('../node_modules/dotenv').config();
 const DbConnection = require('../server/config/dbConnection'); 
@@ -25,7 +28,9 @@ app.use(`${process.env.BASE_URL}${process.env.BUSINESS_URL}`, businessRoutes);
 app.use(`${process.env.BASE_URL}${process.env.LOCATION_URL}`, locationRoutes);
 app.use(`${process.env.BASE_URL}${process.env.SERVICE_URL}`, serviceRoutes);
 app.use(`${process.env.BASE_URL}${process.env.CONSULTANT_URL}`, consultantRoutes);
- 
+app.use(`${process.env.BASE_URL}/sales-optimization`, salesOptimizationRoutes);
+app.use(`${process.env.BASE_URL}/feasibility`, feasibilityRoutes);
+
 app.listen(process.env.PORT_NUM, async () => {
      DbConnection(process.env.DATABASE_URL);
      console.log(`App is running on port ${process.env.PORT_NUM}`);
@@ -39,4 +44,4 @@ app.listen(process.env.PORT_NUM, async () => {
      )){ 
         await Seeding.seedDatabase();
      }
-});
+});  

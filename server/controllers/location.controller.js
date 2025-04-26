@@ -1,19 +1,61 @@
-const Location = require("../models/location.model");  
-   
-const getAllLocation = async (req, res) => { 
-    try {       
-        const locations = await Location.find().populate('businesses.categoryId');
-            
-        if(locations.length === 0){
-            return res.status(404).json({ success: false, message: "No location was found"}); 
-        };  
-    
-        return res.status(200).json({ success: true, locations });    
-    
-        } catch (error) {
-            return res.status(500).json({ message: 'Internal server error' });
-        } 
-}; 
+const mongoose = require("mongoose");
+const Location = require("../models/location.model");
+const Category = require("../models/category.model"); // Ensure this exists
 
-module.exports = { getAllLocation };
- 
+// Get all locations (if needed)
+exports.getAllLocation = async (req, res) => {
+  try {
+    const locations = await Location.find();
+    res.json({ success: true, data: locations });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// Get best locations based on the categoryId
+exports.getBestLocations = async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+  
+      // Validate categoryId
+      if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+        return res.status(400).json({ success: false, message: "Invalid categoryId" });
+      }
+  
+      // Check if category exists
+      const catExists = await Category.exists({ _id: categoryId });
+      if (!catExists) {
+        return res.status(404).json({ success: false, message: "Category not found" });
+      }
+  
+      // Define aggregation pipeline
+      const pipeline = [
+        { $unwind: "$businesses" },
+        { $match: { "businesses.categoryId": new mongoose.Types.ObjectId(categoryId) } },
+        { $sort: { "businesses.count": 1 } },
+        { $group: { _id: "$businesses.count", locations: { $push: "$name" } } },
+        { $sort: { _id: 1 } },
+        { $limit: 1 }
+      ];
+  
+      const [result] = await Location.aggregate(pipeline);
+  
+      if (!result) {
+        return res.status(200).json({
+          success: true,
+          message: "No competitors for this category in any stored location"
+        });
+      }
+  
+      res.json({
+        success: true,
+        data: {
+          competitorCount: result._id,
+          locations: result.locations
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  };
+  
