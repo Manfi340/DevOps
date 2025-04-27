@@ -8,7 +8,7 @@ const businessSchema = new mongoose.Schema({
 const locationSchema = new mongoose.Schema({
   name: { type: String, required: true },
   businesses: [businessSchema]
-}); 
+});
 
 const Location = mongoose.model('Location', locationSchema);
 
