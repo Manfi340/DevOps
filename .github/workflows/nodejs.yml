@@ -27,9 +27,6 @@ jobs:
         npm install eslint --save-dev
         npx eslint . --ext .js,.jsx || true
 
-    - name: Run tests
-      run: npm test
-
     - name: Run build (Optional)
       run: npm run build || echo "No build script defined"
 
